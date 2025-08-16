@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wild Slots</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0a2e3d;
+            color: white;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 900px;
+            gap: 15px;
+        }
+        
+        .slot-area {
+            order: 1;
+            width: 100%;
+        }
+        
+        .paytable {
+            order: 2;
+            background-color: #1a4b5e;
+            border-radius: 10px;
+            padding: 15px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .slot-machine {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+            gap: 5px;
+        }
+        
+        .reel {
+            width: 18vw;
+            height: 24vw;
+            max-width: 80px;
+            max-height: 120px;
+            border: 3px solid #2d7d9a;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            background-color: #123946;
+        }
+        
+        .reel:nth-child(5) {
+            border-color: #ff0000;
+            box-shadow: 0 0 10px #ff0000;
+        }
+        
+        .symbol {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 6vw;
+            position: absolute;
+            will-change: transform;
+        }
+        
+        @media (min-width: 600px) {
+            .game-container {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+            
+            .slot-area {
+                width: auto;
+                flex-grow: 1;
+            }
+            
+            .paytable {
+                width: 250px;
+                flex-shrink: 0;
+            }
+            
+            .symbol {
+                font-size: 40px;
+            }
+            
+            h1 {
+                font-size: 28px;
+                margin: 20px 0;
+            }
+        }
+        
+        .symbol.falling {
+            animation: fall 0.8s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+            transform: translateY(-200px);
+            opacity: 0;
+        }
+        
+        @keyframes fall {
+            0% {
+                transform: translateY(-200px);
+                opacity: 0;
+            }
+            80% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .paytable h3 {
+            text-align: center;
+            margin-top: 0;
+            color: gold;
+        }
+        
+        .paytable table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        .paytable th, .paytable td {
+            padding: 6px;
+            text-align: center;
+            border-bottom: 1px solid #2d7d9a;
+        }
+        
+        .paytable th {
+            color: gold;
+        }
+        
+        .paytable tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            background-color: #2d7d9a;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            min-width: 60px;
+            flex-grow: 1;
+        }
+        
+        @media (min-width: 600px) {
+            button {
+                padding: 10px 15px;
+                font-size: 16px;
+                flex-grow: 0;
+            }
+        }
+        
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            background-color: #123946;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .info-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #7fb8d1;
+            margin-bottom: 3px;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        @media (min-width: 600px) {
+            .info-label {
+                font-size: 14px;
+            }
+            
+            .info-value {
+                font-size: 18px;
+            }
+        }
+        
+        .wild {
+            color: gold;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
+        }
+        
+        .fs {
+            color: gold;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
+            font-weight: bold;
+            font-size: 20px;
+        }
+        
+        @media (min-width: 600px) {
+            .fs {
+                font-size: 30px;
+            }
+        }
+        
+        .win-line {
+            background-color: rgba(255, 215, 0, 0.3);
+            box-shadow: 0 0 15px gold;
+            animation: pulse 0.5s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { opacity: 1; }
+            to { opacity: 0.7; }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #1a4b5e;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            box-sizing: border-box;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modal-buttons button {
+            padding: 8px 20px;
+        }
+        
+        .bonus-win-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .bonus-win-content {
+            background-color: #1a4b5e;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            border: 3px solid gold;
+            box-sizing: border-box;
+        }
+        
+        .bonus-win-content h2 {
+            color: gold;
+            margin-top: 0;
+            font-size: 20px;
+        }
+        
+        @media (min-width: 600px) {
+            .bonus-win-content h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Wild Slots</h1>
+    <div class="game-container">
+        <div class="slot-area">
+            <div class="slot-machine">
+                <div class="reel" id="reel1">
+                    <div class="symbol">🍒</div>
+                    <div class="symbol">🍋</div>
+                    <div class="symbol">🍊</div>
+                </div>
+                <div class="reel" id="reel2">
+                    <div class="symbol">🍒</div>
+                    <div class="symbol">🍋</div>
+                    <div class="symbol">🍊</div>
+                </div>
+                <div class="reel" id="reel3">
+                    <div class="symbol">🍒</div>
+                    <div class="symbol">🍋</div>
+                    <div class="symbol">🍊</div>
+                </div>
+                <div class="reel" id="reel4">
+                    <div class="symbol">🍒</div>
+                    <div class="symbol">🍋</div>
+                    <div class="symbol">🍊</div>
+                </div>
+                <div class="reel" id="reel5">
+                    <div class="symbol">🍒</div>
+                    <div class="symbol">🍋</div>
+                    <div class="symbol">🍊</div>
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <div class="info-item">
+                    <div class="info-label">КРЕДИТ</div>
+                    <div class="info-value" id="credit">100</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">СТАВКА</div>
+                    <div class="info-value" id="bet">1</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">ВЫИГРЫШ</div>
+                    <div class="info-value" id="win">0</div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="bonusRound">БОНУС</button>
+                <button id="betDown">-</button>
+                <button id="betUp">+</button>
+                <button id="maxBet">MAX</button>
+                <button id="spinBtn">SPIN</button>               
+            </div>
+        </div>
+
+        <div class="paytable">
+            <h3>Таблица выплат</h3>
+            <table id="paytable">
+                <tr>
+                    <th>Символ</th>
+                    <th>3</th>
+                    <th>4</th>
+                    <th>5</th>
+                </tr>
+                <tr>
+                    <td>🍒</td>
+                    <td class="cherry-3">2</td>
+                    <td class="cherry-4">5</td>
+                    <td class="cherry-5">10</td>
+                </tr>
+                <tr>
+                    <td>🍋</td>
+                    <td class="lemon-3">4</td>
+                    <td class="lemon-4">10</td>
+                    <td class="lemon-5">20</td>
+                </tr>
+                <tr>
+                    <td>🍊</td>
+                    <td class="orange-3">6</td>
+                    <td class="orange-4">15</td>
+                    <td class="orange-5">30</td>
+                </tr>
+                <tr>
+                    <td>🍉</td>
+                    <td class="watermelon-3">10</td>
+                    <td class="watermelon-4">25</td>
+                    <td class="watermelon-5">50</td>
+                </tr>
+                <tr>
+                    <td>🍇</td>
+                    <td class="grapes-3">16</td>
+                    <td class="grapes-4">40</td>
+                    <td class="grapes-5">80</td>
+                </tr>
+                <tr>
+                    <td>🔔</td>
+                    <td class="bell-3">20</td>
+                    <td class="bell-4">50</td>
+                    <td class="bell-5">100</td>
+                </tr>
+                <tr>
+                    <td>💎</td>
+                    <td class="diamond-3">30</td>
+                    <td class="diamond-4">75</td>
+                    <td class="diamond-5">150</td>
+                </tr>
+                <tr>
+                    <td>⭐</td>
+                    <td class="star-3">40</td>
+                    <td class="star-4">100</td>
+                    <td class="star-5">200</td>
+                </tr>
+                <tr>
+                    <td class="wild">WILD</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td class="fs">FS</td>
+                    <td colspan="3">Бонусный раунд
+                </tr>
+            </table>
+            <p style="text-align: center; margin-top: 15px; font-size: 12px; color: #7fb8d1;">
+                WILD заменяет любые символы<br>
+                FS на 5-м барабане запускает бонусный раунд
+            </p>
+        </div>
+    </div>
+
+    <!-- Модальное окно для бонусного раунда -->
+    <div class="modal" id="bonusModal">
+        <div class="modal-content">
+            <h3 id="bonusModalText">Вы точно хотите купить бонусный раунд за N?</h3>
+            <div class="modal-buttons">
+                <button id="cancelBonus">Отмена</button>
+                <button id="confirmBonus">Да</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно при выпадении FS на 5-м барабане -->
+    <div class="bonus-win-modal" id="fsModal">
+        <div class="bonus-win-content">
+            <h2>Поздравляем!</h2>
+            <p>FS на 5-м барабане! Вы выиграли бонусный раунд!</p>
+            <button id="continueBonus">Продолжить</button>
+        </div>
+    </div>
+
+    <script>
+        // Конфигурация игры
+        const config = {
+            // Массив символов с их весами (вероятностями выпадения)
+            symbols: [
+                { symbol: '🍒', weight: 100 },
+                { symbol: '🍋', weight: 90 },
+                { symbol: '🍊', weight: 80 },
+                { symbol: '🍉', weight: 70 },
+                { symbol: '🍇', weight: 60 },
+                { symbol: '🔔', weight: 40 },
+                { symbol: '💎', weight: 30 },
+                { symbol: '⭐', weight: 20 },
+                { symbol: 'WILD', weight: 30 },
+                { symbol: 'FS', weight: 10 }
+            ],
+            basePaytable: {
+                '🍒': [2, 5, 10],
+                '🍋': [4, 10, 20],
+                '🍊': [6, 15, 30],
+                '🍉': [10, 25, 50],
+                '🍇': [16, 40, 80],
+                '🔔': [20, 50, 100],
+                '💎': [30, 75, 150],
+                '⭐': [40, 100, 200],
+                'WILD': [0, 0, 0],
+                'FS': [0, 0, 0]
+            },
+            reelCount: 5,
+            symbolCount: 3,
+            reelDelay: 200,
+            fallDuration: 800,
+            bonusPrices: {
+                1: 40,
+                2: 100,
+                3: 150,
+                4: 200,
+                5: 250,
+                6: 300,
+                7: 350,
+                8: 400,
+                9: 450,
+                10: 500
+            }
+        };
+
+        // Состояние игры
+        const state = {
+            credit: 100,
+            bet: 1,
+            minBet: 1,
+            maxBet: 10,
+            win: 0,
+            isSpinning: false,
+            winningLines: [],
+            bonusTriggered: false
+        };
+
+        // Элементы DOM
+        const elements = {
+            reels: Array.from(document.querySelectorAll('.reel')),
+            credit: document.getElementById('credit'),
+            bet: document.getElementById('bet'),
+            win: document.getElementById('win'),
+            spinBtn: document.getElementById('spinBtn'),
+            betUp: document.getElementById('betUp'),
+            betDown: document.getElementById('betDown'),
+            maxBet: document.getElementById('maxBet'),
+            bonusRound: document.getElementById('bonusRound'),
+            paytable: document.getElementById('paytable'),
+            bonusModal: document.getElementById('bonusModal'),
+            bonusModalText: document.getElementById('bonusModalText'),
+            cancelBonus: document.getElementById('cancelBonus'),
+            confirmBonus: document.getElementById('confirmBonus'),
+            fsModal: document.getElementById('fsModal'),
+            continueBonus: document.getElementById('continueBonus')
+        };
+
+        // Инициализация игры
+        function init() {
+            updateUI();
+            setupEventListeners();
+            initReels();
+            updatePaytable();
+        }
+
+        // Обновление интерфейса
+        function updateUI() {
+            elements.credit.textContent = state.credit;
+            elements.bet.textContent = state.bet;
+            elements.win.textContent = state.win;
+            
+            elements.betUp.disabled = state.isSpinning || state.bet >= state.maxBet;
+            elements.betDown.disabled = state.isSpinning || state.bet <= state.minBet;
+            elements.maxBet.disabled = state.isSpinning;
+            elements.spinBtn.disabled = state.isSpinning || state.credit < state.bet;
+            elements.bonusRound.disabled = state.isSpinning || state.credit < config.bonusPrices[state.bet];
+        }
+
+        // Обновление таблицы выплат
+        function updatePaytable() {
+            const bet = state.bet;
+            
+            // Обновляем значения в таблице выплат
+            for (const symbol in config.basePaytable) {
+                if (symbol === 'FS') continue;
+                
+                const values = config.basePaytable[symbol];
+                const multiplier = bet;
+                
+                // Для ставки 1 уменьшаем выплаты на 1/5
+                if (bet === 1) {
+                    document.querySelector(`.${symbol.toLowerCase().replace('🍒', 'cherry').replace('🍋', 'lemon').replace('🍊', 'orange').replace('🍉', 'watermelon').replace('🍇', 'grapes').replace('🔔', 'bell').replace('💎', 'diamond').replace('⭐', 'star')}-3`).textContent = Math.floor(values[0] * multiplier * 0.8);
+                    document.querySelector(`.${symbol.toLowerCase().replace('🍒', 'cherry').replace('🍋', 'lemon').replace('🍊', 'orange').replace('🍉', 'watermelon').replace('🍇', 'grapes').replace('🔔', 'bell').replace('💎', 'diamond').replace('⭐', 'star')}-4`).textContent = Math.floor(values[1] * multiplier * 0.8);
+                    document.querySelector(`.${symbol.toLowerCase().replace('🍒', 'cherry').replace('🍋', 'lemon').replace('🍊', 'orange').replace('🍉', 'watermelon').replace('🍇', 'grapes').replace('🔔', 'bell').replace('💎', 'diamond').replace('⭐', 'star')}-5`).textContent = Math.floor(values[2] * multiplier * 0.8);
+                } else {
+                    document.querySelector(`.${symbol.toLowerCase().replace('🍒', 'cherry').replace('🍋', 'lemon').replace('🍊', 'orange').replace('🍉', 'watermelon').replace('🍇', 'grapes').replace('🔔', 'bell').replace('💎', 'diamond').replace('⭐', 'star')}-3`).textContent = values[0] * multiplier;
+                    document.querySelector(`.${symbol.toLowerCase().replace('🍒', 'cherry').replace('🍋', 'lemon').replace('🍊', 'orange').replace('🍉', 'watermelon').replace('🍇', 'grapes').replace('🔔', 'bell').replace('💎', 'diamond').replace('⭐', 'star')}-4`).textContent = values[1] * multiplier;
+                    document.querySelector(`.${symbol.toLowerCase().replace('🍒', 'cherry').replace('🍋', 'lemon').replace('🍊', 'orange').replace('🍉', 'watermelon').replace('🍇', 'grapes').replace('🔔', 'bell').replace('💎', 'diamond').replace('⭐', 'star')}-5`).textContent = values[2] * multiplier;
+                }
+            }
+        }
+
+        // Настройка событий
+        function setupEventListeners() {
+            elements.spinBtn.addEventListener('click', startSpin);
+            elements.betUp.addEventListener('click', () => changeBet(1));
+            elements.betDown.addEventListener('click', () => changeBet(-1));
+            elements.maxBet.addEventListener('click', () => {
+                state.bet = state.maxBet;
+                updateUI();
+                updatePaytable();
+            });
+            elements.bonusRound.addEventListener('click', showBonusModal);
+            elements.cancelBonus.addEventListener('click', hideBonusModal);
+            elements.confirmBonus.addEventListener('click', startBonusRound);
+            elements.continueBonus.addEventListener('click', startBonusRoundFromFS);
+        }
+
+        // Изменение ставки
+        function changeBet(amount) {
+            const newBet = state.bet + amount;
+            if (newBet >= state.minBet && newBet <= state.maxBet) {
+                state.bet = newBet;
+                updateUI();
+                updatePaytable();
+            }
+        }
+
+        // Показать модальное окно бонусного раунда
+        function showBonusModal() {
+            const price = config.bonusPrices[state.bet];
+            elements.bonusModalText.textContent = `Вы точно хотите купить бонусный раунд за ${price}?`;
+            elements.bonusModal.style.display = 'flex';
+        }
+
+        // Скрыть модальное окно бонусного раунда
+        function hideBonusModal() {
+            elements.bonusModal.style.display = 'none';
+        }
+
+        // Функция для выбора случайного символа с учетом весов
+        function getRandomSymbol(isFifthReel = false) {
+            // Рассчитываем общий вес
+            let totalWeight = config.symbols.reduce((sum, sym) => sum + sym.weight, 0);
+            
+            // Если это 5-й барабан, увеличиваем шанс выпадения FS
+            if (isFifthReel) {
+                const fsSymbol = config.symbols.find(s => s.symbol === 'FS');
+                if (fsSymbol) {
+                    totalWeight += fsSymbol.weight * 4; // Увеличиваем вес FS в 5 раз для 5-го барабана
+                }
+            }
+            
+            // Генерируем случайное число
+            const random = Math.random() * totalWeight;
+            
+            // Выбираем символ
+            let currentWeight = 0;
+            for (const sym of config.symbols) {
+                let weight = sym.weight;
+                
+                // Если это 5-й барабан и символ FS, используем увеличенный вес
+                if (isFifthReel && sym.symbol === 'FS') {
+                    weight *= 5;
+                }
+                
+                currentWeight += weight;
+                if (random <= currentWeight) {
+                    return sym.symbol;
+                }
+            }
+            
+            // Если что-то пошло не так, возвращаем первый символ
+            return config.symbols[0].symbol;
+        }
+
+        // Запуск бонусного раунда
+        function startBonusRound() {
+            hideBonusModal();
+            const price = config.bonusPrices[state.bet];
+            
+            if (state.credit < price) {
+                alert('Недостаточно кредитов для покупки бонусного раунда!');
+                return;
+            }
+            
+            state.credit -= price;
+            state.isSpinning = true;
+            state.bonusTriggered = true;
+            updateUI();
+            
+            // Генерируем случайный символ для всех барабанов (кроме FS)
+            const bonusSymbol = getRandomSymbol().symbol === 'FS' ? '🍒' : getRandomSymbol(); // Исключаем FS из бонусного раунда
+            const finalSymbols = Array(5).fill(bonusSymbol);
+            
+            // Запускаем барабаны с задержкой
+            elements.reels.forEach((reel, i) => {
+                setTimeout(() => {
+                    animateReel(reel, finalSymbols[i], i === elements.reels.length - 1 ? finalizeSpin : null);
+                }, i * config.reelDelay);
+            });
+        }
+
+        // Запуск бонусного раунда после выпадения FS
+        function startBonusRoundFromFS() {
+            elements.fsModal.style.display = 'none';
+            state.isSpinning = true;
+            state.bonusTriggered = true;
+            updateUI();
+            
+            // Генерируем случайный символ для всех барабанов (кроме FS)
+            const bonusSymbol = getRandomSymbol().symbol === 'FS' ? '🍒' : getRandomSymbol(); // Исключаем FS из бонусного раунда
+            const finalSymbols = Array(5).fill(bonusSymbol);
+            
+            // Запускаем барабаны с задержкой
+            elements.reels.forEach((reel, i) => {
+                setTimeout(() => {
+                    animateReel(reel, finalSymbols[i], i === elements.reels.length - 1 ? finalizeSpin : null);
+                }, i * config.reelDelay);
+            });
+        }
+
+        // Запуск вращения
+        function startSpin() {
+            if (state.isSpinning || state.credit < state.bet) return;
+            
+            clearWins();
+            state.credit -= state.bet;
+            state.win = 0;
+            state.isSpinning = true;
+            state.bonusTriggered = false;
+            updateUI();
+            
+            // Генерируем финальные символы для каждого барабана
+            const finalSymbols = elements.reels.map((reel, index) => {
+                // На 5-м барабане увеличиваем шанс выпадения FS
+                return getRandomSymbol(index === 4);
+            });
+            
+            // Запускаем барабаны с задержкой
+            elements.reels.forEach((reel, i) => {
+                setTimeout(() => {
+                    animateReel(reel, finalSymbols[i], i === elements.reels.length - 1 ? finalizeSpin : null);
+                }, i * config.reelDelay);
+            });
+        }
+
+        // Финальная обработка после остановки всех барабанов
+        function finalizeSpin() {
+            // Проверяем, выпал ли FS на 5-м барабане
+            const fifthReelSymbol = elements.reels[4].querySelectorAll('.symbol')[1].textContent;
+            
+            if (fifthReelSymbol === 'FS' && !state.bonusTriggered) {
+                // Показываем модальное окно с поздравлением
+                elements.fsModal.style.display = 'flex';
+                return;
+            }
+            
+            // Если это обычный спин или бонусный раунд, проверяем выигрыши
+            checkWins();
+            state.isSpinning = false;
+            state.bonusTriggered = false;
+            updateUI();
+        }
+
+        // Анимация барабана - падение символов сверху
+        function animateReel(reel, finalSymbol, callback) {
+            const symbols = Array.from(reel.querySelectorAll('.symbol'));
+            
+            // Сбрасываем анимацию
+            symbols.forEach(sym => {
+                sym.classList.remove('falling');
+                sym.style.animation = 'none';
+                sym.style.transform = 'translateY(-200px)';
+                sym.style.opacity = '0';
+                void sym.offsetWidth; // Триггер reflow
+            });
+            
+            // Устанавливаем новые символы
+            symbols.forEach(sym => {
+                sym.textContent = finalSymbol;
+                sym.classList.toggle('wild', sym.textContent === 'WILD');
+                sym.classList.toggle('fs', sym.textContent === 'FS');
+            });
+            
+            // Запускаем анимацию падения с небольшой задержкой между символами
+            symbols.forEach((sym, index) => {
+                setTimeout(() => {
+                    sym.classList.add('falling');
+                }, index * 100);
+            });
+            
+            // Фиксируем конечное положение после анимации
+            setTimeout(() => {
+                symbols.forEach(sym => {
+                    sym.style.transform = 'translateY(0)';
+                    sym.style.opacity = '1';
+                    sym.classList.remove('falling');
+                });
+                
+                if (callback) callback();
+            }, config.fallDuration + (symbols.length * 100));
+        }
+
+        // Проверка выигрышных комбинаций
+        function checkWins() {
+            state.winningLines = [];
+            
+            // Проверяем центральную линию
+            const centerLine = elements.reels.map(reel => {
+                const symbols = Array.from(reel.querySelectorAll('.symbol'));
+                return symbols[1].textContent;
+            });
+            
+            const result = checkLine(centerLine, 2);
+            if (result) {
+                state.win = result.win;
+                state.credit += state.win;
+                state.winningLines.push({ line: 2, count: result.count });
+                highlightWinningLine(2, result.count);
+            }
+        }
+
+        // Проверка одной линии
+        function checkLine(symbols, lineIndex) {
+            // Находим базовый символ (первый не WILD и не FS)
+            let baseSymbol = null;
+            for (let i = 0; i < symbols.length; i++) {
+                if (symbols[i] !== 'WILD' && symbols[i] !== 'FS') {
+                    baseSymbol = symbols[i];
+                    break;
+                }
+            }
+            if (!baseSymbol) return null;
+            
+            // Считаем совпадения
+            let matchCount = 0;
+            for (let i = 0; i < symbols.length; i++) {
+                if (symbols[i] === baseSymbol || symbols[i] === 'WILD') {
+                    matchCount++;
+                } else {
+                    break;
+                }
+            }
+            
+            // Если есть выигрышная комбинация
+            if (matchCount >= 3) {
+                let winAmount;
+                const bet = state.bet;
+                
+                if (bet === 1) {
+                    // Для ставки 1 уменьшаем выплаты на 1/5
+                    winAmount = Math.floor(config.basePaytable[baseSymbol][matchCount - 3] * 0.8);
+                } else {
+                    // Для других ставок умножаем на ставку
+                    winAmount = config.basePaytable[baseSymbol][matchCount - 3] * bet;
+                }
+                
+                return { win: winAmount, count: matchCount };
+            }
+            
+            return null;
+        }
+
+        // Подсветка выигрышной линии
+        function highlightWinningLine(lineIndex, count) {
+            for (let i = 0; i < count; i++) {
+                const reel = elements.reels[i];
+                const symbols = Array.from(reel.querySelectorAll('.symbol'));
+                symbols[lineIndex - 1].classList.add('win-line');
+            }
+        }
+
+        // Очистка подсветки
+        function clearWins() {
+            document.querySelectorAll('.win-line').forEach(el => {
+                el.classList.remove('win-line');
+            });
+        }
+
+        // Инициализация барабанов
+        function initReels() {
+            elements.reels.forEach(reel => {
+                const symbols = Array.from(reel.querySelectorAll('.symbol'));
+                symbols.forEach((sym, i) => {
+                    sym.style.transform = `translateY(${i * 100 - 100}px)`;
+                    sym.style.opacity = '1';
+                });
+            });
+        }
+
+        // Запуск игры
+        init();
+    </script>
+</body>
+</html>
